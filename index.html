@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐转盘抽奖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 30px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+
+        @media (min-width: 768px) {
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 5px solid white;
+        }
+
+        /* 8个均衡的区块 */
+        .segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+
+        /* 纯色区块 */
+        .segment:nth-child(1) { background: #FF6B6B; } /* 区块1 */
+        .segment:nth-child(2) { background: #4ECDC4; } /* 区块2 */
+        .segment:nth-child(3) { background: #45B7D1; } /* 区块3 */
+        .segment:nth-child(4) { background: #96CEB4; } /* 区块4 */
+        .segment:nth-child(5) { background: #FFEAA7; } /* 区块5 */
+        .segment:nth-child(6) { background: #DDA0DD; } /* 区块6 */
+        .segment:nth-child(7) { background: #FFA726; } /* 区块7 */
+        .segment:nth-child(8) { background: #81C784; } /* 区块8 */
+
+        .segment-number {
+            position: absolute;
+            left: 70%;
+            top: 20%;
+            transform-origin: left center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+            z-index: 2;
+            background: rgba(0,0,0,0.3);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: #FF4757;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .controls {
+            margin: 25px 0;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(255,107,107,0.4);
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255,107,107,0.6);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-panel {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        .result-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 45px;
+        }
+
+        .result-link {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            word-break: break-all;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .jump-btn {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(78,205,196,0.4);
+        }
+
+        .jump-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(78,205,196,0.6);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .instructions {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .wheel-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .spin-btn {
+                padding: 14px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎡 音乐转盘抽奖</h1>
+        <p class="subtitle">转动转盘，发现精彩内容</p>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <!-- 转盘区块将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="spin-btn" id="spin-btn">
+                开始旋转
+            </button>
+        </div>
+
+        <div class="result-panel" id="result-panel">
+            <h3 class="result-title">🎉 恭喜抽中</h3>
+            <div class="result-text" id="result-text">等待转动...</div>
+            <div class="result-link" id="result-link">结果链接将显示在这里</div>
+            <button class="jump-btn" id="jump-btn">
+                访问对应网站
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <p>每个区块对应不同的网站，转动转盘后点击按钮即可访问</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 元素引用
+            const wheel = document.getElementById('wheel');
+            const spinBtn = document.getElementById('spin-btn');
+            const resultPanel = document.getElementById('result-panel');
+            const resultText = document.getElementById('result-text');
+            const resultLink = document.getElementById('result-link');
+            const jumpBtn = document.getElementById('jump-btn');
+            
+            // ========================================
+            // 在这里修改每个区块对应的网站链接！
+            // 修改下面的链接为你想要的网站
+            // ========================================
+            const websiteLinks = [
+                'https://www.douyin.com',        // 区块1
+                'https://www.bilibili.com',      // 区块2
+                'https://music.163.com',         // 区块3
+                'https://www.youtube.com',       // 区块4
+                'https://weibo.com',             // 区块5
+                'https://www.zhihu.com',         // 区块6
+                'https://www.xiaohongshu.com',   // 区块7
+                'https://www.taobao.com'         // 区块8
+            ];
+            
+            // ========================================
+            // 音频元素
+            const audioPlayer = new Audio();
+            
+            // 转盘配置
+            const segmentCount = 8; // 固定8个区块
+            let isSpinning = false;
+            let currentSegmentIndex = -1;
+            let currentLink = '';
+            
+            // 初始化转盘
+            function initWheel() {
+                wheel.innerHTML = '';
+                
+                const angle = 360 / segmentCount; // 45度每个区块
+                
+                for (let i = 0; i < segmentCount; i++) {
+                    const segment = document.createElement('div');
+                    segment.className = 'segment';
+                    segment.dataset.index = i;
+                    
+                    // 计算旋转角度
+                    const rotateAngle = i * angle;
+                    segment.style.transform = `rotate(${rotateAngle}deg)`;
+                    
+                    // 创建区块数字
+                    const number = document.createElement('div');
+                    number.className = 'segment-number';
+                    number.textContent = i + 1;
+                    
+                    // 调整数字位置
+                    const numberAngle = rotateAngle + angle / 2;
+                    number.style.transform = `rotate(${numberAngle}deg)`;
+                    
+                    segment.appendChild(number);
+                    wheel.appendChild(segment);
+                }
+                
+                // 重置转盘
+                wheel.style.transform = 'rotate(0deg)';
+                resultPanel.classList.remove('show');
+                currentSegmentIndex = -1;
+                currentLink = '';
+            }
+            
+            // 播放示例音乐
+            function playMusic() {
+                // 使用示例音乐
+                audioPlayer.src = 'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3';
+                audioPlayer.volume = 0.5;
+                audioPlayer.play().catch(e => {
+                    console.log('音频播放失败:', e);
+                });
+            }
+            
+            // 初始化
+            initWheel();
+            
+            // 旋转转盘
+            spinBtn.addEventListener('click', function() {
+                if (isSpinning) return;
+                
+                isSpinning = true;
+                spinBtn.disabled = true;
+                resultPanel.classList.remove('show');
+                
+                // 播放音乐
+                playMusic();
+
+                // 随机旋转角度 (至少5圈 + 随机度数)
+                const extraRotation = Math.floor(Math.random() * 360);
+                const totalRotation = 1800 + extraRotation; // 至少5圈
+                
+                // 应用旋转动画
+                wheel.style.transform = `rotate(${totalRotation}deg)`;
+                
+                // 计算结果
+                setTimeout(() => {
+                    const segmentAngle = 360 / segmentCount; // 45度
+                    
+                    // 计算最终落在哪个扇区
+                    // 调整计算方式，使指针指向正确
+                    const normalizedRotation = (360 - (extraRotation % 360)) % 360;
+                    currentSegmentIndex = Math.floor(normalizedRotation / segmentAngle);
+                    
+                    // 确保索引在有效范围内 (0-7)
+                    currentSegmentIndex = currentSegmentIndex % segmentCount;
+                    
+                    // 显示结果
+                    resultText.textContent = `区块 ${currentSegmentIndex + 1}`;
+                    resultLink.textContent = websiteLinks[currentSegmentIndex];
+                    resultPanel.classList.add('show');
+                    
+                    // 保存当前链接
+                    currentLink = websiteLinks[currentSegmentIndex];
+                    
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                }, 4000); // 等待旋转动画完成
+            });
+            
+            // 跳转到对应页面
+            jumpBtn.addEventListener('click', function() {
+                if (currentLink) {
+                    console.log('跳转到:', currentLink);
+                    // 在新标签页中打开链接
+                    window.open(currentLink, '_blank');
+                } else {
+                    alert('请先转动转盘获取结果！');
+                }
+            });
+            
+            // 添加触摸事件支持（移动设备）
+            wheel.addEventListener('touchstart', function(e) {
+                if (!isSpinning) {
+                    spinBtn.click();
+                }
+            });
+            
+            // 添加键盘支持（按空格键旋转）
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && !isSpinning) {
+                    spinBtn.click();
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
