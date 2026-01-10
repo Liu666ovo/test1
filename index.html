@@ -1,555 +1,291 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>转盘抽奖</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>高级感转盘</title>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-        }
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        .container {
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top, #1c203b 0%, #0b0d17 100%);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
 
-        .title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700, #DDA0DD);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
-            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
+.container {
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
 
-        /* 转盘容器 */
-        .wheel-container {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            margin: 0 auto 40px;
-        }
+.title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+    color: #d4af37;
+}
 
-        /* 转盘外框装饰 */
-        .wheel-frame {
-            position: absolute;
-            top: -20px;
-            left: -20px;
-            right: -20px;
-            bottom: -20px;
-            border: 15px solid;
-            border-image: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700, #DDA0DD) 1;
-            border-radius: 50%;
-            animation: rotateFrame 20s linear infinite;
-            z-index: 1;
-        }
+/* ================= 转盘区域 ================= */
 
-        /* 转盘主体 */
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-            transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.5),
-                inset 0 0 80px rgba(0, 0, 0, 0.4);
-            border: 12px solid #2c3e50;
-            z-index: 2;
-            background: #1a1a2e;
-        }
+.wheel-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 0 auto 40px;
+}
 
-        /* 6个纯色区块 - 更鲜艳的颜色 */
-        .segment {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: bottom right;
-            left: 0;
-            top: 0;
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-            border-right: 3px solid rgba(255, 255, 255, 0.2);
-            border-bottom: 3px solid rgba(255, 255, 255, 0.15);
-        }
+/* 外圈慢旋转装饰 */
+.wheel-frame {
+    position: absolute;
+    inset: -18px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    background:
+        linear-gradient(#0b0d17, #0b0d17) padding-box,
+        linear-gradient(135deg, #d4af37, #8e44ad, #2c3e50) border-box;
+    animation: rotateFrame 30s linear infinite;
+}
 
-        /* 精确的60度分割 - 确保指针对准 */
-        .segment:nth-child(1) { 
-            background: linear-gradient(135deg, #FF6B6B 30%, #FF8E53 100%);
-            transform: rotate(0deg) skewY(-30deg);
-        }
-        .segment:nth-child(2) { 
-            background: linear-gradient(135deg, #4ECDC4 30%, #6ED3D3 100%);
-            transform: rotate(60deg) skewY(-30deg);
-        }
-        .segment:nth-child(3) { 
-            background: linear-gradient(135deg, #FFD700 30%, #FFA726 100%);
-            transform: rotate(120deg) skewY(-30deg);
-        }
-        .segment:nth-child(4) { 
-            background: linear-gradient(135deg, #DDA0DD 30%, #C9A9E9 100%);
-            transform: rotate(180deg) skewY(-30deg);
-        }
-        .segment:nth-child(5) { 
-            background: linear-gradient(135deg, #36B7B7 30%, #4ECDC4 100%);
-            transform: rotate(240deg) skewY(-30deg);
-        }
-        .segment:nth-child(6) { 
-            background: linear-gradient(135deg, #FF8E53 30%, #FF6B6B 100%);
-            transform: rotate(300deg) skewY(-30deg);
-        }
+/* 转盘主体 */
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
 
-        /* 中心圆盘 */
-        .wheel-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle at 35% 35%, #2c3e50, #1a1a2e);
-            border-radius: 50%;
-            border: 6px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 0 30px rgba(255, 215, 0, 0.6),
-                inset 0 0 30px rgba(0, 0, 0, 0.6);
-            z-index: 15;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: bold;
-            color: rgba(255, 255, 255, 0.9);
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-        }
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0.7)),
+        #15172b;
 
-        /* 精准指针 - 完全对准扇形边界 */
-        .pointer {
-            position: absolute;
-            top: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 45px;
-            height: 55px;
-            z-index: 20;
-            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
-        }
+    border: 8px solid transparent;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
 
-        .pointer-main {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, #FF4757, #FF6B6B);
-            clip-path: polygon(50% 0%, 45% 100%, 55% 100%);
-            border-top-left-radius: 50%;
-            border-top-right-radius: 50%;
-            position: relative;
-        }
+    background-image:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(0,0,0,0.6)),
+        linear-gradient(135deg, #d4af37, #8e44ad, #2c3e50);
 
-        .pointer-dot {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
-            z-index: 2;
-        }
+    box-shadow:
+        0 30px 60px rgba(0,0,0,0.6),
+        inset 0 0 60px rgba(0,0,0,0.7);
 
-        .pointer-glow {
-            position: absolute;
-            bottom: 7px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            filter: blur(8px);
-            animation: pulse 1.2s ease-in-out infinite alternate;
-        }
+    transition: transform 5.5s cubic-bezier(0.12, 0.62, 0.08, 0.98);
+}
 
-        /* 控制按钮 */
-        .controls {
-            margin: 30px 0;
-        }
+/* 扇形 */
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: bottom right;
+    left: 0;
+    top: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(0,0,0,0.35));
+}
 
-        .spin-btn {
-            background: linear-gradient(145deg, #FF6B6B, #FF4757);
-            color: white;
-            border: none;
-            padding: 20px 60px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 15px 35px rgba(255, 107, 107, 0.5),
-                0 0 0 3px rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 2px;
-        }
+.segment:nth-child(1) { background-color: #ff6b6b; transform: rotate(0deg) skewY(-30deg); }
+.segment:nth-child(2) { background-color: #4ecdc4; transform: rotate(60deg) skewY(-30deg); }
+.segment:nth-child(3) { background-color: #f6c453; transform: rotate(120deg) skewY(-30deg); }
+.segment:nth-child(4) { background-color: #c39bd3; transform: rotate(180deg) skewY(-30deg); }
+.segment:nth-child(5) { background-color: #48c9b0; transform: rotate(240deg) skewY(-30deg); }
+.segment:nth-child(6) { background-color: #ff8e53; transform: rotate(300deg) skewY(-30deg); }
 
-        .spin-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            transition: 0.5s;
-        }
+/* 中心圆 */
+.wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+    box-shadow:
+        0 0 40px rgba(255,215,0,0.8),
+        inset 0 0 25px rgba(0,0,0,0.6);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
 
-        .spin-btn:hover:not(:disabled)::after {
-            left: 100%;
-        }
+/* 指针 */
+.pointer {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 45px;
+    height: 55px;
+    z-index: 20;
+}
 
-        .spin-btn:hover:not(:disabled) {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 
-                0 20px 40px rgba(255, 107, 107, 0.7),
-                0 0 0 4px rgba(255, 255, 255, 0.2);
-        }
+.pointer-main {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #ffffff, #ff6b6b, #b22222);
+    clip-path: polygon(50% 0%, 45% 100%, 55% 100%);
+}
 
-        .spin-btn:active:not(:disabled) {
-            transform: translateY(-2px) scale(0.98);
-        }
+.pointer-dot {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 15px rgba(255,255,255,0.8);
+}
 
-        .spin-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+/* ================= 按钮 & 结果 ================= */
 
-        /* 结果面板 */
-        .result-panel {
-            background: rgba(30, 30, 50, 0.95);
-            backdrop-filter: blur(25px);
-            border-radius: 25px;
-            padding: 30px;
-            margin-top: 25px;
-            display: none;
-            animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
+.spin-btn {
+    background: linear-gradient(145deg, #d4af37, #b8860b);
+    color: #111;
+    border: none;
+    padding: 18px 55px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(212,175,55,0.6);
+}
 
-        .result-panel.show {
-            display: block;
-        }
+.result-panel {
+    margin-top: 30px;
+    display: none;
+}
 
-        .result-title {
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            color: #FFD700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
+.result-panel.show {
+    display: block;
+}
 
-        .result-content {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 30px;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #FFD700);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
+.result-content {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 15px;
+}
 
-        .result-link {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 30px;
-            word-break: break-all;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 18px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-family: 'Menlo', 'Monaco', monospace;
-        }
+.result-link {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    word-break: break-all;
+}
 
-        .jump-btn {
-            background: linear-gradient(145deg, #4ECDC4, #36B7B7);
-            color: white;
-            border: none;
-            padding: 18px 45px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.5);
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-        }
+.jump-btn {
+    margin-top: 15px;
+    padding: 14px 40px;
+    border-radius: 40px;
+    border: none;
+    background: #4ecdc4;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        .jump-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 30px rgba(78, 205, 196, 0.7);
-        }
-
-        /* 动画 */
-        @keyframes rotateFrame {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
-            100% { opacity: 0.6; transform: translateX(-50%) scale(1.2); }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 响应式调整 */
-        @media (max-width: 480px) {
-            .wheel-container {
-                width: 280px;
-                height: 280px;
-            }
-            
-            .title {
-                font-size: 2rem;
-            }
-            
-            .spin-btn {
-                padding: 18px 50px;
-                font-size: 1.3rem;
-            }
-            
-            .result-content {
-                font-size: 2rem;
-            }
-        }
-
-        /* 调试用 - 显示扇形边界线 */
-        .debug-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .debug-line {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 50%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.3);
-            transform-origin: left center;
-        }
-    </style>
+@keyframes rotateFrame {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h1 class="title">🎡 转盘</h1>
-        
-        <div class="wheel-container">
-            <div class="wheel-frame"></div>
-            
-            <div class="pointer">
-                <div class="pointer-main"></div>
-                <div class="pointer-dot"></div>
-                <div class="pointer-glow"></div>
-            </div>
-            
-            <div class="wheel" id="wheel">
-                <!-- 6个纯色区块 -->
-            </div>
-            
-            <div class="wheel-center">🎯</div>
+<div class="container">
+    <h1 class="title">幸运转盘</h1>
+
+    <div class="wheel-container">
+        <div class="wheel-frame"></div>
+
+        <div class="pointer">
+            <div class="pointer-main"></div>
+            <div class="pointer-dot"></div>
         </div>
 
-        <div class="controls">
-            <button class="spin-btn" id="spin-btn">
-                <span>旋转转盘</span>
-            </button>
-        </div>
-
-        <div class="result-panel" id="result-panel">
-            <h3 class="result-title">🎉 结果</h3>
-            <div class="result-content" id="result-content">
-                ...
-            </div>
-            <div class="result-link" id="result-link">
-                网站
-            </div>
-            <button class="jump-btn" id="jump-btn">
-                <span>前往</span>
-            </button>
-        </div>
+        <div class="wheel" id="wheel"></div>
+        <div class="wheel-center">🎯</div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const wheel = document.getElementById('wheel');
-            const spinBtn = document.getElementById('spin-btn');
-            const resultPanel = document.getElementById('result-panel');
-            const resultContent = document.getElementById('result-content');
-            const resultLink = document.getElementById('result-link');
-            const jumpBtn = document.getElementById('jump-btn');
-            
-            // 网站链接配置（6个区块）
-            const websiteLinks = [
-                'https://v.douyin.com/GYjDVh6J_o4/',
-                'https://v.douyin.com/dk0-ciGiocU/', 
-                'https://v.douyin.com/bpyMA2kvFzc/ ',
-                'https://v.douyin.com/EZSWGD9y8Yw/',
-                'https://v.douyin.com/AasEW3Q_gLo/',
-                'https://v.douyin.com/NkNIVlZ5T1w/'
-            ];
-            
-            // 状态变量
-            const segmentCount = 6;
-            let isSpinning = false;
-            let currentRotation = 0;
-            let currentSegmentIndex = -1;
-            let currentLink = '';
-            
-            // 初始化转盘（无文字纯色）
-            function initWheel() {
-                wheel.innerHTML = '';
-                const angle = 360 / segmentCount;
-                
-                // 创建6个纯色扇形区块
-                for (let i = 0; i < segmentCount; i++) {
-                    const segment = document.createElement('div');
-                    segment.className = 'segment';
-                    wheel.appendChild(segment);
-                }
-                
-                wheel.style.transform = `rotate(${currentRotation}deg)`;
-                resetResult();
-            }
-            
-            // 旋转转盘
-            function spinWheel() {
-                if (isSpinning) return;
-                
-                isSpinning = true;
-                spinBtn.disabled = true;
-                resetResult();
-                
-                // 旋转角度计算（修复指针对准问题）
-                const extraRotation = Math.floor(Math.random() * 360);
-                // 计算最终应该停在哪个扇区（60度的整数倍）
-                const targetSector = Math.floor(Math.random() * segmentCount);
-                // 确保指针精确对准扇形中心线
-                const targetRotation = 1800 + (targetSector * 60) + 30; // 30是偏移到扇形中间
-                
-                // 应用动画
-                currentRotation += targetRotation;
-                wheel.style.transform = `rotate(${currentRotation}deg)`;
-                
-                // 计算并显示结果
-                setTimeout(() => {
-                    // 修正计算：确保指针准确指向
-                    const effectiveRotation = currentRotation % 360;
-                    // 指针在0度（顶部），计算对准的扇区
-                    const pointerRotation = (360 - effectiveRotation) % 360;
-                    currentSegmentIndex = Math.floor((pointerRotation + 30) / 60) % segmentCount;
-                    
-                    // 显示结果
-                    const colorNames = ['夏夜最后的烟火', '你想要的', '搁浅', '大笨钟', '说好的幸福呢', '寂寞寂寞不好'];
-                    resultContent.textContent = `${colorNames[currentSegmentIndex]}`;
-                    currentLink = websiteLinks[currentSegmentIndex];
-                    resultLink.textContent = currentLink;
-                    resultPanel.classList.add('show');
-                    
-                    // 按钮状态恢复
-                    setTimeout(() => {
-                        isSpinning = false;
-                        spinBtn.disabled = false;
-                    }, 500);
-                }, 4000);
-            }
-            
-            // 重置结果
-            function resetResult() {
-                resultPanel.classList.remove('show');
-                currentSegmentIndex = -1;
-                currentLink = '';
-            }
-            
-            // 跳转到网站
-            function jumpToLink() {
-                if (currentLink) {
-                    window.open(currentLink, '_blank');
-                } else {
-                    alert('请先转动转盘获取结果！');
-                }
-            }
-            
-            // 事件监听
-            spinBtn.addEventListener('click', spinWheel);
-            jumpBtn.addEventListener('click', jumpToLink);
-            
-            // 触摸支持
-            wheel.addEventListener('touchstart', function(e) {
-                if (!isSpinning) {
-                    e.preventDefault();
-                    spinWheel();
-                }
-            }, { passive: false });
-            
-            // 空格键支持
-            document.addEventListener('keydown', function(e) {
-                if (e.code === 'Space' && !isSpinning) {
-                    e.preventDefault();
-                    spinWheel();
-                }
-            });
-            
-            // 初始化
-            initWheel();
-            
-            // 页面加载提示
-            console.log('🎨 纯色视觉转盘已加载');
-            console.log('🔧 指针已修复，精确对准扇形边界');
-        });
-    </script>
+    <button class="spin-btn" id="spin-btn">旋转转盘</button>
+
+    <div class="result-panel" id="result-panel">
+        <div class="result-content" id="result-content">...</div>
+        <div class="result-link" id="result-link"></div>
+        <button class="jump-btn" id="jump-btn">前往</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spin-btn');
+    const resultPanel = document.getElementById('result-panel');
+    const resultContent = document.getElementById('result-content');
+    const resultLink = document.getElementById('result-link');
+    const jumpBtn = document.getElementById('jump-btn');
+
+    const websiteLinks = [
+        'https://v.douyin.com/GYjDVh6J_o4/',
+        'https://v.douyin.com/dk0-ciGiocU/',
+        'https://v.douyin.com/bpyMA2kvFzc/',
+        'https://v.douyin.com/EZSWGD9y8Yw/',
+        'https://v.douyin.com/AasEW3Q_gLo/',
+        'https://v.douyin.com/NkNIVlZ5T1w/'
+    ];
+
+    const names = ['夏夜最后的烟火','你想要的','搁浅','大笨钟','说好的幸福呢','寂寞寂寞不好'];
+
+    let rotation = 0;
+    let spinning = false;
+    let currentLink = '';
+
+    for (let i = 0; i < 6; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'segment';
+        wheel.appendChild(seg);
+    }
+
+    spinBtn.onclick = () => {
+        if (spinning) return;
+        spinning = true;
+        resultPanel.classList.remove('show');
+
+        const index = Math.floor(Math.random() * 6);
+        rotation += 1800 + index * 60 + 30;
+        wheel.style.transform = `rotate(${rotation}deg)`;
+
+        setTimeout(() => {
+            resultContent.textContent = names[index];
+            currentLink = websiteLinks[index];
+            resultLink.textContent = currentLink;
+            resultPanel.classList.add('show');
+            spinning = false;
+        }, 5500);
+    };
+
+    jumpBtn.onclick = () => {
+        if (currentLink) window.open(currentLink);
+    };
+});
+</script>
 </body>
 </html>
